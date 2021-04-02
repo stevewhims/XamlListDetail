@@ -1,10 +1,8 @@
 # The XamlListDetail Project Reunion 0.5 sample retargeted from UWP
 
-This repo contains the result of taking the [UWP XamlListDetail sample app](https://github.com/microsoft/Windows-universal-samples/tree/master/Samples/XamlMasterDetail), and retargeting it to Reunion/WinUI/Win32.
+This repo contains the result of taking the [UWP XamlMasterDetail sample app](https://github.com/microsoft/Windows-universal-samples/tree/master/Samples/XamlMasterDetail), and retargeting it to Reunion/WinUI/Win32. But I'll be changing the name of the project to **XamlListDetail** (and matching the default namespace with that).
 
-I'll be referring to the UWP XamlListDetail sample app project as the *source project*.
-
-And we'll be changing the name of the project to **XamlListDetail** (and matching the default namespace with that).
+I'll be referring to the UWP XamlMasterDetail sample app project as the *source project*, and I'll be referring to XamlListDetail as the *target project*.
 
 ## Install the Project Reunion 0.5 VSIX
 
@@ -14,7 +12,7 @@ In Visual Studio, click **Extensions** > **Manage Extensions**, search for *Proj
 
 In Visual Studio, create a new project from the **Blank App, Packaged (WinUI 3 in Desktop)** project template. You can find that by choosing language: C++; platform: Project Reunion; project type: Desktop (which is referring to Win32 in this context). Name the project *XamlListDetail*, uncheck **Place solution and project in the same directory**, and target the most recent release (not preview) of the platform (currently 19041).
 
-There are actually two projects in Solution Explorer&mdash;one is qualified as **(Desktop)**, and the other as **(Package)**. We'll be making changes only to the *Desktop* project in this walkthrough, and I'll be referring to that as the *target project*.
+There are actually two projects in Solution Explorer&mdash;one is qualified as **(Desktop)**, and the other as **(Package)**. We'll be making changes only to the *Desktop* project in this walkthrough.
 
 ## Refactor the IDL into one file
 
@@ -53,6 +51,8 @@ Copy the `ItemsDataSource.h` file into the target project folder, and include it
 We'll also need to port across ItemsDataSource. No need for xaml here, just copy ItemsDataSource.h across, and fix up the namespace.
 
 ## Begin porting **DetailPage**
+
+In this section we'll begin porting **DetailPage**; and we'll be finishing that up in a later section.
 
 Add a new item to the target project (**WinUI** > **Blank Page (WinUI 3)**) named `DetailPage.xaml`.
 
