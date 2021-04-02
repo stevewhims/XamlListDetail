@@ -5,4 +5,49 @@ namespace XamlListDetail
     {
         MainWindow();
     }
+
+    [default_interface]
+    runtimeclass DetailPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        DetailPage();
+
+        XamlListDetail.ViewModels.ItemViewModel Item{ get; };
+
+        static Microsoft.UI.Xaml.DependencyProperty ItemProperty{ get; };
+    }
+
+    [default_interface]
+    runtimeclass ListDetailPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        ListDetailPage();
+
+        Microsoft.UI.Xaml.Controls.ListView ListView{ get; };
+    }
+}
+
+namespace XamlListDetail.Data
+{
+    runtimeclass Item
+    {
+        Item(Int32 itemId, Windows.Foundation.DateTime dateCreated, String title, String text);
+
+        Int32 ItemId;
+        String Title;
+        String Text;
+        Windows.Foundation.DateTime DateCreated;
+    }
+}
+
+namespace XamlListDetail.ViewModels
+{
+    runtimeclass ItemViewModel
+    {
+        Int32 ItemId { get; };
+        String DateCreatedHourMinute{ get; };
+        String Title{ get; };
+        String Text{ get; };
+        Windows.Foundation.DateTime DateCreated{ get; };
+
+        static ItemViewModel FromItem(XamlListDetail.Data.Item item);
+    }
 }

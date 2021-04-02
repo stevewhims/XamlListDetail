@@ -2,6 +2,10 @@
 
 This repo contains the result of taking the [UWP XamlListDetail sample app](https://github.com/microsoft/Windows-universal-samples/tree/master/Samples/XamlMasterDetail), and retargeting it to Reunion/WinUI/Win32.
 
+I'll be referring to the UWP XamlListDetail sample app project as the *source project*.
+
+And we'll be changing the name of the project to **XamlListDetail** (and matching the default namespace with that).
+
 ## Install the Project Reunion 0.5 VSIX
 
 In Visual Studio, click **Extensions** > **Manage Extensions**, search for *Project Reunion*, and download the Project Reunion extension. Close and reopen Visual Studio, and follow the prompts to install the extension. For more info, see [Project Reunion 0.5](https://github.com/microsoft/ProjectReunion/releases/tag/0.5.0).
@@ -10,9 +14,11 @@ In Visual Studio, click **Extensions** > **Manage Extensions**, search for *Proj
 
 In Visual Studio, create a new project from the **Blank App, Packaged (WinUI 3 in Desktop)** project template. You can find that by choosing language: C++; platform: Project Reunion; project type: Desktop (which is referring to Win32 in this context). Name the project *XamlListDetail*, uncheck **Place solution and project in the same directory**, and target the most recent release (not preview) of the platform (currently 19041).
 
-There are actually two projects in Solution Explorer&mdash;one is qualified as **(Desktop)**, and the other as **(Package)**. I'll be referring only to the *Desktop* project in this walkthrough.
+There are actually two projects in Solution Explorer&mdash;one is qualified as **(Desktop)**, and the other as **(Package)**. We'll be making changes only to the *Desktop* project in this walkthrough, and I'll be referring to that as the *target project*.
 
 ## Refactor the IDL into one file
+
+The source project has all of its IDL in one file named `Project.idl`. So we'll follow that pattern in the target project.
 
 Add a new **Midl File (.idl)** item to the project. Name the new item `Project.idl`. Delete the default contents of `Project.idl`.
 
@@ -20,222 +26,166 @@ Move all the IDL from `MainWindow.idl` into `Project.idl`, save that, and then d
 
 Remove the dummy property from `Project.idl` and from `MainWindow.xaml.h` and `.cpp`. Remove the event handler from those files, too. In `MainWindow.xaml`, replace the content with just `<Grid/>`. Confirm you can build and run at this stage.
 
-===
+## Port **ItemViewModel** and **Item**
 
+The main page is **MasterDetailPage**. But its XAML has dependencies on **MasterDetailApp::ViewModels::ItemViewModel** (which in turn depends on **MasterDetailApp::Data::Item**). So let's port those types before porting **MasterDetailPage**. In fact, we'll also need to port **ItemsDataSource** and **DetailPage** before **MasterDetailPage**.
 
-The main page is MasterDetailPage. But its XAML has dependencies on MasterDetailApp::ViewModels::ItemViewModel (which in turn depends on MasterDetailApp.Data.Item), so let's port those types across before porting the XAML. We'll also need to port across ItemsDataSource, and DetailPage before MasterDetailPage.
+Open `Project.idl` for editing. From `Project.idl` in the source project, copy the declarations of **Item** and **ItemViewModel** (including the namespaces) to the target project. Fix up the namespaces (change all occurrences of **MasterDetailApp** to **XamlListDetail**).
 
-Edit Project.idl, and copy the declarations of Item and ItemViewModel into it (fixing up the namespace names everywhere). Build to generate implementation stubs (errors are expected). Show All Files, then copy Data.Item.h and .cpp and ViewModels.ItemViewModel.h and .cpp into the project folder then add them to the project. Delete the static asserts. Confirm you can build again.
+Save the file, and build the project. The build won't entirely succeed yet, but the build will generate the source code files (stubs) that we need to get started implementing **Item** and **ItemViewModel**.
 
-Next let's port the code across for MasterDetailApp.Data.Item. Copy the private data members from Item.cpp over to Data.Item.h. And copy the implementations from Item.cpp over to Data.Item.cpp. It's all very straightforward. Except, change id and m_id back to itemId and m_itemId like they're meant to be called.
+Right-click the target project node and click **Open Folder in File Explorer**. This opens the project folder in File Explorer. There, copy the stub files `Data.Item.h` and `.cpp`, and `ViewModels.ItemViewModel.h` and `.cpp`, from the `\XamlListDetail\XamlListDetail\XamlListDetail\Generated Files\sources` folder and into the target project folder, which is `\XamlListDetail\XamlListDetail\XamlListDetail`. In **Solution Explorer**, with the project node selected, make sure **Show All Files** is toggled on. Right-click the stub files that you copied, and click **Include In Project**.
 
-Port the code across for MasterDetailApp::ViewModels::ItemViewModel. Copy the private data members from ItemViewModel.cpp over to ViewModels.ItemViewModel.h. And copy the implementations from ItemViewModel.cpp over to ViewModels.ItemViewModel.h. You'll need to add the constructor manually, since that wasn't in the IDL for some reason. For this type to compile, add the following to pch.h:
-```cppwinrt
-#include <winrt/Windows.Globalization.DateTimeFormatting.h>
-#include "winrt/Microsoft.UI.Xaml.Media.Animation.h"
-#include "winrt/Windows.UI.Core.h"
-```
+You'll see a `static_assert` at the top of the files you copied, which you'll need to remove. Confirm that you can build again (but don't run yet).
 
-Next create a new item (WinUI > Blank Page (WinUI 3)) named ListDetailPage.xaml. Move the IDL out of ListDetailPage.idl and into Project.idl; delete ListDetailPage.idl. Remove the dummy property from the IDL (and from the .h and .cpp). Remove the event handler from those files, too. In the xaml file, replace the content with just `<Grid x:Name="layoutRoot"/>`. Confirm you can build and run at this stage.
+Now let's port the implementation of **MasterDetailApp.Data.Item** from `Item.cpp`. Copy the private data members from `Item.cpp` into `Data.Item.h`. And copy the method implementations from `Item.cpp` into the existing method stubs in `Data.Item.cpp`. In the member initializer list that you copied, change *id* to *itemId*. Be sure to delete `throw hresult_not_implemented();` from the constructor.
+
+Follow similar steps to port the implementation of **MasterDetailApp.ItemViewModel.Item** from `ItemViewModel.cpp` to `ViewModels.ItemViewModel.h` and `.cpp`. In this case there's a non-default constructor that we didn't declare in the IDL, so copy that across also. Fix up the namespaces (change all occurrences of **MasterDetailApp** to **XamlListDetail**).
+
+Add `#include <winrt/Windows.Globalization.DateTimeFormatting.h>` to pch.h, and confirm that you can build (but don't run yet).
+
+## Port **ItemsDataSource**
+
+**ItemsDataSource** is a helper class; there's no need for IDL nor XAML.
+
+Copy the `ItemsDataSource.h` file into the target project folder, and include it in the project. Fix up the namespaces (change all occurrences of **MasterDetailApp** to **XamlListDetail**).
 
 We'll also need to port across ItemsDataSource. No need for xaml here, just copy ItemsDataSource.h across, and fix up the namespace.
 
-Copy the XAML from DetailPage.xaml over into DetailPage.xaml, including any necessary xaml attributes. Copy/replace all (match case and full word): MasterListViewItemTemplate => ListViewItemTemplate; MasterColumn => ListColumn; MasterListView => theListView; MasterListView_ItemClick => ListView_ItemClick.
+## Begin porting **DetailPage**
 
-Change Windows::UI::Core::WindowSizeChangedEventArgs to Microsoft::UI::Xaml::WindowSizeChangedEventArgs
+Add a new item to the target project (**WinUI** > **Blank Page (WinUI 3)**) named `DetailPage.xaml`.
 
-Copy the XAML from MasterDetailPage.xaml over into ListDetailPage.xaml, including any necessary xaml attributes. Copy/replace all (match case and full word): MasterListViewItemTemplate => ListViewItemTemplate; MasterColumn => ListColumn; MasterListView => theListView; MasterListView_ItemClick => ListView_ItemClick.
+Move the IDL out of `DetailPage.idl` and into `Project.idl`; delete `DetailPage.idl`. Remove the dummy property from the IDL you copied, and add the two IDL properties of **DetailPage** from the source project.
 
-In ListDetailPage.xaml.h, add `#include "ViewModels.ItemViewModel.h"`. Copy over rest of IDL for ListDetailPage, fixing up namespaces.
+From `pch.h`, copy over the following includes.
 
-Copy code from MasterDetailPage.h and cpp over to ListDetailPage, fixing up namespace as you go. Change Windows::UI::Xaml to Microsoft::UI::Xaml, and add `#include "winrt/Microsoft.UI.Xaml.Media.Animation.h"` to pch.h. Don't need `#include <algorithm>` here.
-
-In App.cpp add:
 ```cppwinrt
-#include "ListDetailPage.xaml.h"
-#include "DetailPage.xaml.h"
+#include <winrt/Microsoft.UI.Xaml.Media.Animation.h>
+#include <winrt/MasterDetailApp.h>
+#include <winrt/MasterDetailApp.Data.h>
+#include <winrt/MasterDetailApp.ViewModels.h>
+#include <ItemsDataSource.h>
 ```
 
-In MainWindow.xaml, replace the Grid with `<local:ListDetailPage/>`.
+Copy the contents of `DetailPage.xaml`, `DetailPage.h`, and `DetailPage.cpp` from the source project into the target project. Make the following find/replacements (match case and whole word) in the contents of all of the source code you just copied.
 
-ISSUES: DetailPage::ShouldGoToWideState() calls Window::Current().Bounds().Width. Need an alternative for that. Also need to solve Window::Current().SizeChanged.
+Changes for inclusive naming:
 
-ISSUES: Looks like the TextBlock theme resources ListBodyTextBlockStyle and ListCaptionAltTextblockStyle are missing from WinUI 3. I instead set the style to BodyTextBlockStyle, and added a Gray foreground attribute and that looked identical to the app I was porting. But that's a workaround. Btw, folks can debug missing resource keys via debug output in the Output pane.
+* MasterDetailApp => XamlListDetail
 
-Remember to add `DetailPage::RegisterDependencyProperties();` to App.xaml.cpp.
+Changes due to the difference between UWP and Reunion/WinUI/Win32 platform and tooling:
 
-Delete from DetailPage.xaml.h and .cpp (SystemNavigationManager is not for Win32 apps):
-event_token m_backRequestedEventRegistrationToken{};
-AND
-// Register for hardware and software back request from the system
-auto systemNavigationManager = SystemNavigationManager::GetForCurrentView();
-m_backRequestedEventRegistrationToken =
-    systemNavigationManager.BackRequested({ this, &DetailPage::DetailPage_BackRequested });
-systemNavigationManager.AppViewBackButtonVisibility(AppViewBackButtonVisibility::Visible);
+* `#include "DetailPage.h"` => `#include "DetailPage.xaml.h"`
+* `Windows::UI::Xaml` => `Microsoft::UI::Xaml`
+* `Windows.UI.Xaml` => `Microsoft.UI.Xaml`
+* `Windows::UI::Core::WindowSizeChangedEventArgs` => `Microsoft::UI::Xaml::WindowSizeChangedEventArgs`
 
-For the same reason, also delete DetailPage::OnNavigatedFrom.
+Also make the following edits.
 
-TRYING THIS FOR instead of Window Current.
-App header
-static winrt::Microsoft::UI::Xaml::Window Window() { return window; }
+* In the definition of **DetailPage::Window_SizeChanged**, qualify the second parameter as type **Microsoft::UI::Xaml::WindowSizeChangedEventArgs**.
+* Remove code in **DetailPage::OnNavigatedTo** that makes use of the **SystemNavigationManager** class. **SystemNavigationManager** isn't relevant for Win32 (desktop) apps.
+* Delete **DetailPage::OnNavigatedFrom**,  **DetailPage::DetailPage_BackRequested**, and **DetailPage::OnBackRequested**.
+
+Confirm that you can build (but don't run yet).
+
+## Port **ListDetailPage**
+
+Add a new item to the target project (**WinUI** > **Blank Page (WinUI 3)**) named `ListDetailPage.xaml`.
+
+Move the IDL out of `ListDetailPage.idl` and into `Project.idl`; delete `ListDetailPage.idl`. Remove the dummy property from the IDL you copied, and add the IDL property of **ListDetailPage** from the source project.
+
+From `pch.h`, copy over the following include.
+
+```cppwinrt
+#include <winrt/Windows.UI.Core.h>
+```
+
+Copy the contents of `ListDetailPage.xaml`, `ListDetailPage.h`, and `ListDetailPage.cpp` from the source project into the target project. Make the following find/replacements (match case and whole word) in the contents of all of the source code you just copied.
+
+Changes for inclusive naming:
+
+* MasterDetailPage => ListDetailPage
+* MasterDetailPageT => ListDetailPageT
+* MasterDetailApp => XamlListDetail
+* MasterListViewItemTemplate => ListViewItemTemplate
+* MasterColumn => ListColumn
+* MasterListView => ListView
+* MasterListView_ItemClick => ListView_ItemClick
+
+Changes due to the difference between UWP and Reunion/WinUI/Win32 platform and tooling:
+
+* `#include "ListDetailPage.h"` => `#include "ListDetailPage.xaml.h"`
+* `Windows::UI::Xaml` => `Microsoft::UI::Xaml`
+* `Windows.UI.Xaml` => `Microsoft.UI.Xaml`
+
+Also make the following edits.
+
+* In the definition of **ListDetailPage::Window_SizeChanged**, qualify the second parameter as type **Microsoft::UI::Xaml::WindowSizeChangedEventArgs**.
+* Delete code in **ListDetailPage::OnNavigatedTo** that makes use of the **SystemNavigationManager** class. **SystemNavigationManager** isn't relevant for Win32 (desktop) apps.
+* Delete **ListDetailPage::OnNavigatedFrom**,  **ListDetailPage::DetailPage_BackRequested**, and **ListDetailPage::OnBackRequested**.
+* Delete the *m_backRequestedEventRegistrationToken* data member.
+
+In `ListDetailPage.xaml`, there's a **TextBlock** that references the *ListBodyTextBlockStyle* theme resource. But that doesn't exist yet, so change that to *BaseTextBlockStyle*, and add `Foreground="Gray"` to the **TextBlock**.
+
+Do the same thing with the **TextBlock** that references the *ListCaptionAltTextblockStyle* theme resource.
+
+Confirm that you can build (but don't run yet).
+
+## Port **App**
+
+As part of the port, we need to add a few pieces to the App class (`App.xaml.h` and `.cpp`). Let's start by porting over the code that sets up the app ready for the navigation that the other pages in the app will be doing.
+
+Copy over the declaration and definition of the **CreateRootFrame** and **OnNavigationFailed** methods. Also copy over the code inside the **OnLaunched** event handler, except for the line that activates the window, since you already have that (paste the code in between the two lines of code that area already in **OnLaunched**). As the last line of the constructor, add `DetailPage::RegisterDependencyProperties();`.
+
+Delete **OnSuspending** from `App.xaml.h`.
+
+So that the **App** class can expose the main window to the rest of the app, make the following additions and edits.
+
+```cppwinrt
+// App.xaml.h
+...
+#include "DetailPage.xaml.h"
+...
+struct App : AppT<App>
+{
+    ...
+    static winrt::Microsoft::UI::Xaml::Window Window() { return window; }
+
 private:
     static winrt::Microsoft::UI::Xaml::Window window;
-
-cpp
-winrt::Microsoft::UI::Xaml::Window App::window{ nullptr }; 
-
-In DetailPage, change all Window.Current to stuff like `return App::Window().Bounds().Width >= 720.0;`.
-
-In DetailPage, change the revoker to `winrt::Microsoft::UI::Xaml::Window::SizeChanged_revoker m_event_revoker;`. And `m_event_revoker = App::Window().SizeChanged(winrt::auto_revoke, { this, &DetailPage::Window_SizeChanged } )` and remove the code manually revoking.
-
-
-
-===
-## Add asset files
-
-In Solution Explorer, in the Package project under **Images**, add a new folder (not a filter) named *SampleMedia*. Open the Package project folder in File Explorer and place [the four images](https://github.com/stevewhims/RetargetToReunionCppWin32/tree/master/RetargetToReunionCppWin32/RetargetToReunionCppWin32%20(Package)/Images/SampleMedia) in that folder.
-
-Back in Solution Explorer, in the Package project, add the existing images to the **SampleMedia** folder.
-
-## UI
-
-VisualStateManager requires us to add a user control. To the Desktop project, add a new item of type **User Control (WinUI)**. Name it *VSMUC.xaml*.
-
-From [RetargetToReunionCppUWP](https://github.com/stevewhims/RetargetToReunionCppUWP) in `MainPage.xaml`, copy the contents of the **Page** element. In `VSMUC.xaml`, replace the contents of the **Page** element with the content you copied.
-
-* In the markup you pasted, change the name of the **Button** click event handler from **ClickHandler** to **myButton_Click**.
-* In the **Image** **Source** urls, change `Assets` to `Images`.
-* In the **TextBlock**, change `(UWP)` to `(Win32)`.
-
-In `VSMUC.xaml.cpp`, delete the line of code inside **VSMUC::myButton_Click**.
-
-In `MainWindow.xaml`, replace the contents of the **Window** element with the following markup.
-
-```xaml
-<!-- MainWindow.xaml -->
-<local:VSMUC/>
+};
 ```
 
-In `MainWindow.xaml.cpp`, delete the line of code inside **MainWindow::myButton_Click**.
+Finish porting the code you copied by making these changes:
+
+* MasterDetailApp => XamlListDetail
+* MasterDetailPage => ListDetailPage
+* `Windows::UI::Xaml` => `Microsoft::UI::Xaml`
+* `Window::Current()` => `window`
+
+Confirm that you can build (but don't run yet).
+
+## Finalize **DetailPage**
+
+In `DetailPage.xaml.h`, remove the private *m_sizeChangedEventRegistrationToken* field, and replace it with `winrt::Microsoft::UI::Xaml::Window::SizeChanged_revoker m_event_revoker;`.
+
+In `DetailPage.xaml.cpp`, add `#include <App.xaml.h>`.
+
+Also in `DetailPage.xaml.cpp`, find `m_sizeChangedEventRegistrationToken = Window::Current().SizeChanged({ this, &DetailPage::Window_SizeChanged });`, and replace that with `m_event_revoker = App::Window().SizeChanged(winrt::auto_revoke, { this, &DetailPage::Window_SizeChanged } );`.
+
+Apart from the line of code mentioned above, delete every other mention of `SizeChanged` in `DetailPage.xaml.cpp`. Also remove every mention of *m_sizeChangedEventRegistrationToken*.
+
+Delete the **PageRoot_Unloaded** method from the `DetailPage.xaml`, `.h`, and `.cpp` files.
+
+In **ShouldGoToWideState**, change `Window::Current().Bounds().Width` to `App::Window().Bounds().Width`.
+
+Confirm that you can build (but don't run yet).
+
+## Finalize **MainWindow**
+
+In `MainWindow.xaml`, replace the **Grid** with `<local:ListDetailPage/>`.
 
 ## Test
 
-Before working on file activation, confirm that at this point the project builds and runs.
-
-## Add a file type association
-
-Open `Package.appxmanifest`. In **Declarations**, choose **File Type Associations**, and click **Add**. Set the following properties.
-
-**Display name**: Hello File 2
-**Name**: hellofile2
-**File type**: .hi2
-
-To register the file type association, build the app, launch it, and close it.
-
-## Imperative code
-
-### File type association feature
-
-There's no need to add code to `App.h` nor `App.cpp`.
-
-### Visual states
-
-From [RetargetToReunionCppUWP](https://github.com/stevewhims/RetargetToReunionCppUWP) in `MainPage.h`, copy the declaration of **SizeChangedHandler**. Paste that into `VSMUC.xaml.h`.
-
-In `MainPage.cpp`, copy the code you added to the constructor, and the definition of **SizeChangedHandler**. Paste that into `VSMUC.xaml.cpp`.
-
-In the code you pasted, change the `Windows::` namespace to `Microsoft::`; and change `MainPage::` to `VSMUC::`.
-
-### Button click handler
-
-In `VSMUC.xaml.h` and `VSMUC.xaml.cpp`, change the return type of **myButton_Click** to **winrt::fire_and_forget**.
-
-From [RetargetToReunionCppUWP](https://github.com/stevewhims/RetargetToReunionCppUWP) in `MainPage.cpp`, copy the definition of **ClickHandler**. Paste that into `VSMUC.xaml.cpp`.
-
-To port that code, make the following changes.
-
-* In `pch.h`, add the following.
-  
-  ```cppwinrt
-  #include <Shobjidl.h>
-  #include <winrt/Windows.Storage.h>
-  #include <winrt/Windows.Storage.AccessCache.h>
-  #include <winrt/Windows.Storage.Pickers.h>
-  #include <winrt/Windows.Storage.Search.h>
-  #include <winrt/Windows.UI.Core.h>
-  #include <winrt/Windows.UI.Popups.h>
-  ```
-* In `App.xaml.h` and `App.xaml.cpp`, add the following.
-  
-  ```cppwinrt
-  // App.xaml.h
-  ...
-  struct App : AppT<App>
-  {
-    ...
-    static HWND WindowHandle() { return m_hWnd; }
-
-  private:
-    ...
-    static HWND m_hWnd;
-  };
-  ...
-
-  // App.xaml.cpp
-  ...
-  HWND App::m_hWnd = 0;
-  ...
-  struct __declspec(uuid("EECDBF0E-BAE9-4CB6-A68E-9598E1CB57BB")) __declspec(novtable)
-    IWindowNative : ::IUnknown
-  {
-    virtual HRESULT __stdcall get_WindowHandle(HWND* hwnd) = 0;
-  };
-  ...
-  void App::OnLaunched(LaunchActivatedEventArgs const&)
-  {
-    ...
-    auto windowNative { window.as<::IWindowNative>() };
-    HWND hWnd { 0 };
-    windowNative->get_WindowHandle(&hWnd);
-    App::m_hWnd = hWnd;
-  }
-  ...
-  ```
-* In `VSMUC.xaml.h` and `VSMUC.xaml.cpp`, add the following.
-
-  ```cppwinrt
-  // VSMUC.xaml.h
-  ...
-  #include <App.xaml.h>
-  ...
-  struct VSMUC : VSMUCT<VSMUC>
-  {
-    ...
-    private:
-      static void ParentDialogToWindow(Windows::Foundation::IInspectable const&);
-  };
-  ...
-
-  // VSMUC.xaml.cpp
-  ...
-  void VSMUC::ParentDialogToWindow(IInspectable const& dialog)
-  {
-    // Helper function for non-CoreWindow.
-    auto initializeWithWindow = dialog.as<::IInitializeWithWindow>();
-    initializeWithWindow->Initialize(App::WindowHandle());
-  }
-  ...
-  ```
-* In `VSMUC.xaml.cpp`, immediately after declaring *showDialog*, add the line of code `VSMUC::ParentDialogToWindow(showDialog);`
-* In `VSMUC.xaml.cpp`, immediately after declaring *folderPicker*, add the line of code `VSMUC::ParentDialogToWindow(folderPicker);`
-* In `VSMUC.xaml.cpp`, comment out `co_await winrt::resume_foreground(this->Dispatcher());`. **TODO**: find out how to use **Microsoft::System::DispatcherQueue** instead.
-
-## Test again
-
-In your local **Documents** folder (or anywhere else, if you like), create a new **Text Document** file, and name it *MyHelloFile2.hi2*.
-
-Double-click on the file, and confirm that the app launches and displays the UI. With the launched app still running, double-click on the file a second time, and confirm that a second instance is launched (multi-instancing).
-
-Resize the window, and confirm that the correct visual states are applied.
-
-Click the button, dismiss the message dialog, pick a folder containing files, and confirm that the first three filenames are displayed in the list box.
+Now you can build, run, and test. Resize the window, and confirm that the correct visual states are applied, and that selection and navigation are functioning as expected.

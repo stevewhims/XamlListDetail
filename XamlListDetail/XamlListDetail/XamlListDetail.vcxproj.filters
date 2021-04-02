@@ -5,18 +5,24 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainWindow.xaml" />
+    <Page Include="ListDetailPage.xaml" />
+    <Page Include="DetailPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="App.idl" />
-    <Midl Include="MainWindow.idl" />
     <Midl Include="Project.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="Data.Item.cpp" />
+    <ClCompile Include="ViewModels.ItemViewModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Data.Item.h" />
+    <ClInclude Include="ViewModels.ItemViewModel.h" />
+    <ClInclude Include="ItemsDataSource.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

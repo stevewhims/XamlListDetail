@@ -21,3 +21,11 @@
 #include <winrt/Microsoft.UI.Xaml.Media.h>
 #include <winrt/Microsoft.UI.Xaml.Navigation.h>
 #include <winrt/Microsoft.UI.Xaml.Shapes.h>
+#include <winrt/Windows.Globalization.DateTimeFormatting.h>
+
+#include <winrt/Microsoft.UI.Xaml.Media.Animation.h>
+#include <winrt/XamlListDetail.h>
+#include <winrt/XamlListDetail.Data.h>
+#include <winrt/XamlListDetail.ViewModels.h>
+#include <ItemsDataSource.h>
+#include <winrt/Windows.UI.Core.h>
