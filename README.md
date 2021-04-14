@@ -1,6 +1,6 @@
 # The XamlListDetail Project Reunion 0.5 sample retargeted from UWP
 
-This repo contains the result of taking the [UWP XamlMasterDetail sample app](https://github.com/microsoft/Windows-universal-samples/tree/master/Samples/XamlMasterDetail), and retargeting it to Reunion/WinUI/Win32. But I'll be changing the name of the project to **XamlListDetail** (and matching the default namespace with that).
+This repo contains the result of taking the [UWP XamlMasterDetail sample app](https://docs.microsoft.com/samples/microsoft/windows-universal-samples/xamlmasterdetail/), and retargeting it to Reunion/WinUI/Win32. But I'll be changing the name of the project to **XamlListDetail** (and matching the default namespace with that).
 
 I'll be referring to the UWP XamlMasterDetail sample app project as the *source project*, and I'll be referring to XamlListDetail as the *target project*.
 
