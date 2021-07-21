@@ -1,28 +1,28 @@
-# The XamlListDetail Project Reunion 0.5 sample retargeted from UWP
+# XamlListDetail&mdash;a Windows App SDK 0.8.1 port of the UWP XamlMasterDetail sample app
 
-This repo contains the result of taking the [UWP XamlMasterDetail sample app](https://docs.microsoft.com/samples/microsoft/windows-universal-samples/xamlmasterdetail/), and retargeting it to Reunion/WinUI/Win32. But I'll be changing the name of the project to **XamlListDetail** (and matching the default namespace with that).
+This repo contains the result of taking the [UWP XamlMasterDetail sample app](https://docs.microsoft.com/samples/microsoft/windows-universal-samples/xamlmasterdetail/), and porting it to the Windows App SDK 0.8.1. In the process, we change the name of the project to **XamlListDetail** (and we change the default namespace name to match).
 
 I'll be referring to the UWP XamlMasterDetail sample app project as the *source project*, and I'll be referring to XamlListDetail as the *target project*.
 
-## Install the Project Reunion 0.5 VSIX
+## Install the Windows App SDK 0.8.1 VSIX
 
-In Visual Studio, click **Extensions** > **Manage Extensions**, search for *Project Reunion*, and download the Project Reunion extension. Close and reopen Visual Studio, and follow the prompts to install the extension. For more info, see [Project Reunion 0.5](https://github.com/microsoft/ProjectReunion/releases/tag/0.5.0).
+In [Visual Studio](https://visualstudio.microsoft.com/downloads/), click **Extensions** > **Manage Extensions** > **Installed**, search for *Project Reunion* (which is the code name of the Windows App SDK), and download the Project Reunion extension. Close and reopen Visual Studio, and follow the prompts to install the extension. For more info, see [0.8.1 is now available!](https://github.com/microsoft/WindowsAppSDK/releases/tag/v0.8.1).
 
 ## Create a new project
 
-In Visual Studio, create a new project from the **Blank App, Packaged (WinUI 3 in Desktop)** project template. You can find that by choosing language: C++; platform: Project Reunion; project type: Desktop (which is referring to Win32 in this context). Name the project *XamlListDetail*, uncheck **Place solution and project in the same directory**, and target the most recent release (not preview) of the platform (currently 19041).
+In Visual Studio, create a new project from the **Blank App, Packaged (WinUI 3 in Desktop)** project template. You can find that project template in the **Create a new project** dialog by choosing language: *C++*; platform: *Project Reunion*; project type: *Desktop* (which is referring to Win32 in this context) or *WinUI*. Name the project *XamlListDetail*, uncheck **Place solution and project in the same directory**, and target the most recent release (not preview) of the client operating system (19041 at time of writing).
 
-There are actually two projects in Solution Explorer&mdash;one is qualified as **(Desktop)**, and the other as **(Package)**. We'll be making changes only to the *Desktop* project in this walkthrough.
+You'll now see two projects in Solution Explorer&mdash;one is qualified as **(Desktop)**, and the other as **(Package)**. We'll be making changes only to the *Desktop* project in this walkthrough.
 
 ## Refactor the IDL into one file
 
-The source project has all of its IDL in one file named `Project.idl`. So we'll follow that pattern in the target project.
+The source project has all of its IDL in one file, named `Project.idl`. So we'll follow that pattern in the target project.
 
 Add a new **Midl File (.idl)** item to the project. Name the new item `Project.idl`. Delete the default contents of `Project.idl`.
 
 Move all the IDL from `MainWindow.idl` into `Project.idl`, save that, and then delete `MainWindow.idl`.
 
-Remove the dummy property from `Project.idl` and from `MainWindow.xaml.h` and `.cpp`. Remove the event handler from those files, too. In `MainWindow.xaml`, replace the content with just `<Grid/>`. Confirm you can build and run at this stage.
+Remove the dummy property from `Project.idl` and from `MainWindow.xaml.h` and `.cpp`. Remove the event handler from those files, too. In `MainWindow.xaml`, replace the content with just `<Grid/>`. Confirm that you can build and run at this stage.
 
 ## Port **ItemViewModel** and **Item**
 
@@ -48,7 +48,7 @@ Add `#include <winrt/Windows.Globalization.DateTimeFormatting.h>` to pch.h, and 
 
 Copy the `ItemsDataSource.h` file into the target project folder, and include it in the project. Fix up the namespaces (change all occurrences of **MasterDetailApp** to **XamlListDetail**).
 
-We'll also need to port across ItemsDataSource. No need for xaml here, just copy ItemsDataSource.h across, and fix up the namespace.
+We'll also need to port across ItemsDataSource. No need for XAML here, just copy `ItemsDataSource.h` across, and fix up the namespace.
 
 ## Begin porting **DetailPage**
 
@@ -70,7 +70,7 @@ From `pch.h`, copy over the following includes.
 
 Copy the contents of `DetailPage.xaml`, `DetailPage.h`, and `DetailPage.cpp` from the source project into the target project. Make the following find/replacements (match case and whole word) in the contents of all of the source code you just copied.
 
-Changes for inclusive naming:
+Changes for improved naming:
 
 * MasterDetailApp => XamlListDetail
 
@@ -103,7 +103,7 @@ From `pch.h`, copy over the following include.
 
 Copy the contents of `ListDetailPage.xaml`, `ListDetailPage.h`, and `ListDetailPage.cpp` from the source project into the target project. Make the following find/replacements (match case and whole word) in the contents of all of the source code you just copied.
 
-Changes for inclusive naming:
+Changes for improved naming:
 
 * MasterDetailPage => ListDetailPage
 * MasterDetailPageT => ListDetailPageT
@@ -126,7 +126,7 @@ Also make the following edits.
 * Delete **ListDetailPage::OnNavigatedFrom**,  **ListDetailPage::DetailPage_BackRequested**, and **ListDetailPage::OnBackRequested**.
 * Delete the *m_backRequestedEventRegistrationToken* data member.
 
-In `ListDetailPage.xaml`, there's a **TextBlock** that references the *ListBodyTextBlockStyle* theme resource. But that doesn't exist yet, so change that to *BaseTextBlockStyle*, and add `Foreground="Gray"` to the **TextBlock**.
+In `ListDetailPage.xaml`, there's a **TextBlock** that references the *ListBodyTextBlockStyle* theme resource. But that doesn't exist yet, so change that to *BodyTextBlockStyle*, and add `Foreground="Gray"` to the **TextBlock**.
 
 Do the same thing with the **TextBlock** that references the *ListCaptionAltTextblockStyle* theme resource.
 
