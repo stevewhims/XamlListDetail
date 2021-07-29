@@ -126,13 +126,11 @@ Also make the following edits.
 * Delete **ListDetailPage::OnNavigatedFrom**,  **ListDetailPage::DetailPage_BackRequested**, and **ListDetailPage::OnBackRequested**.
 * Delete the *m_backRequestedEventRegistrationToken* data member.
 
-In `ListDetailPage.xaml`, there's a **TextBlock** that references the *ListBodyTextBlockStyle* theme resource. But that doesn't exist yet, so change that to *BodyTextBlockStyle*, and add `Foreground="Gray"` to the **TextBlock**.
-
-Do the same thing with the **TextBlock** that references the *ListCaptionAltTextblockStyle* theme resource.
-
 Confirm that you can build (but don't run yet).
 
 ## Port **App**
+
+In `App.xaml` in the source project, you'll find a **<ResourceDictionary.ThemeDictionaries>** element. Copy that element (the opening and closing tags, and the inner XML) and paste it into the same place inside `App.xaml` in the target project. This theme **ResourceDictionary** contains styles that the app depends on.
 
 As part of the port, we need to add a few pieces to the App class (`App.xaml.h` and `.cpp`). Let's start by porting over the code that sets up the app ready for the navigation that the other pages in the app will be doing.
 

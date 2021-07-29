@@ -34,15 +34,13 @@
                     Text="{x:Bind Text}"
                     Grid.Row="1"
                     MaxLines="1"
-                    Foreground="Gray"
-                    Style="{ThemeResource BodyTextBlockStyle}" />
+                    Style="{ThemeResource ListBodyTextBlockStyle}" />
 
                 <TextBlock
                     Text="{x:Bind DateCreatedHourMinute}"
                     Grid.Column="1"
                     Margin="12,1,0,0"
-                    Foreground="Gray"
-                    Style="{ThemeResource BodyTextBlockStyle}" />
+                    Style="{ThemeResource ListCaptionAltTextblockStyle}" />
             </Grid>
         </DataTemplate>
 
